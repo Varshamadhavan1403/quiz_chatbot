@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
 from pathlib import Path
+from django.core.exceptions import ImproperlyConfigured
 
 
 def env(key, default=None):
@@ -23,9 +24,16 @@ def env(key, default=None):
         raise ImproperlyConfigured("`%s` environment var is required." % key)
 
 
+# def bool_value(key, default=False):
+#     return bool(int(env(key, default)))
 def bool_value(key, default=False):
-    return bool(int(env(key, default)))
-
+    val = env(key, str(default)).lower()  # Get the environment variable value (or default) and convert it to lowercase
+    if val in ['true', '1', 'yes']:  # Check if the value is one of the truthy values
+        return True
+    elif val in ['false', '0', 'no']:  # Check if the value is one of the falsy values
+        return False
+    else:
+        raise ValueError(f'Invalid boolean value for {key}: {val}')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -38,7 +46,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-td(*4#)n^+hy_z=kn+(&7g=aj)a7)!)cqoh28p2sxdozd_0-d7'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool_value('DEBUG', True)
+DEBUG = bool_value('DEBUG', 1)
 
 ALLOWED_HOSTS = [
     "localhost",

@@ -52,7 +52,7 @@
             background-color: #f0f0f0;
             color: #333;
         }
-        .send-button {
+        .send-button, .reset-button {
             background-color: #777;
             color: #fff;
             border: none;
@@ -67,21 +67,15 @@
     <div class="chat-container">
         <ul class="chat-messages" id="chat-messages">
             {% for message in request.session.message_history %}
-                {% if message.is_user %}
-                <li class="message user-message">
-                    <div class="message-text">{{message.text}}</div>
+                <li class="message {% if message.is_user %}user-message{% else %}bot-message{% endif %}">
+                    <div class="message-text">{{ message.text }}</div>
                 </li>
-                {% else %}
-                <li class="message bot-message">
-                    <div class="message-text">{{message.text}}</div>
-                </li>
-                {% endif %}
             {% endfor %}
         </ul>
         <div class="input-container">
             <input type="text" class="input-box" id="input-box" placeholder="Type your message...">
             <button class="send-button" id="send-button">Send</button>
-            <button class="send-button" id="reset-button">Reset</button>
+            <button class="reset-button" id="reset-button">Reset</button>
         </div>
     </div>
     <script>
@@ -121,30 +115,21 @@
         };
 
         document.querySelector('#reset-button').onclick = function(e) {
-            const inputBox = document.getElementById('input-box');
-            inputBox.value = '/reset';
-            document.querySelector('#send-button').click();
-            location.reload()
+            chatSocket.send(JSON.stringify({
+                'message': '/reset'
+            }));
         };
 
-    // Function to add a new message to the chat container
-    function addMessage(text, isUser = false) {
-        const chatMessages = document.getElementById('chat-messages');
-        const messageClass = isUser ? 'user-message' : 'bot-message';
-        const messageText = `
-            <li class="message ${messageClass}">
-                <div class="message-text">${text}</div>
-            </li>
-        `;
-        chatMessages.insertAdjacentHTML('beforeend', messageText);
-    }
-
-    // Function to handle user message submission
-    function sendMessage() {
-        const inputBox = document.getElementById('input-box');
-        const userMessage = inputBox.value.trim();
-
-    }
+        function addMessage(text, isUser) {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageClass = isUser ? 'user-message' : 'bot-message';
+            const messageText = `
+                <li class="message ${messageClass}">
+                    <div class="message-text">${text}</div>
+                </li>
+            `;
+            chatMessages.insertAdjacentHTML('beforeend', messageText);
+        }
 
     </script>
 </body>
